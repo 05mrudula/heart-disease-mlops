@@ -13,6 +13,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the entire project
 COPY . .
 
+# Train the model and generate artifacts
+RUN python src/train.py
+
 # Expose FastAPI port
 EXPOSE 8000
 
