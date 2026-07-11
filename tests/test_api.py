@@ -41,6 +41,10 @@ def test_predict():
 
     assert response.status_code == 200
 
-    prediction = response.json()["prediction"]
+    response_data = response.json()
 
-    assert prediction in [0, 1]
+    assert "prediction" in response_data
+    assert "probability" in response_data
+
+    assert response_data["prediction"] in [0, 1]
+    assert 0.0 <= response_data["probability"] <= 1.0

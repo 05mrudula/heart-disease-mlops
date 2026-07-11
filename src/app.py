@@ -69,6 +69,9 @@ def predict(data: HeartDiseaseInput):
 
     prediction = model.predict(input_df)[0]
 
+    probability = model.predict_proba(input_df)[0]
+
     return {
-        "prediction": int(prediction)
+        "prediction": int(prediction),
+        "probability": round(float(max(probability)), 4)
     }
