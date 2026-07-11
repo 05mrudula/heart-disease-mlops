@@ -297,6 +297,54 @@ Application logging is implemented for:
 
 ---
 
+## Kubernetes Deployment
+
+This project also supports deployment to a local Kubernetes cluster using Docker Desktop Kubernetes.
+
+### Prerequisites
+
+- Docker Desktop with Kubernetes enabled
+- kubectl installed
+
+### Build Docker Image
+
+```bash
+docker build -t heart-disease-api .
+```
+
+### Deploy to Kubernetes
+
+```bash
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+```
+
+### Verify Deployment
+
+```bash
+kubectl get all
+```
+
+### Access the API
+
+Forward the service port:
+
+```bash
+kubectl port-forward service/heart-disease-service 8000:8000
+```
+
+Swagger UI:
+
+```text
+http://localhost:8000/docs
+```
+
+### Remove the Deployment
+
+```bash
+kubectl delete -f k8s/
+```
+
 ## Tech Stack
 
 - Python
@@ -317,8 +365,6 @@ Application logging is implemented for:
 
 ## Future Improvements
 
-- Cloud deployment
-- Kubernetes deployment
 - Model monitoring
 - Automated model retraining
 - Model registry
