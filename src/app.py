@@ -1,3 +1,8 @@
+# ==========================================================
+# Import Libraries
+# ==========================================================
+
+import logging
 from pathlib import Path
 
 import joblib
@@ -7,13 +12,37 @@ from pydantic import BaseModel
 
 
 # ==========================================================
+# Logging Configuration
+# ==========================================================
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+logger = logging.getLogger(__name__)
+
+
+# ==========================================================
 # Load Trained Model
 # ==========================================================
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 MODEL_PATH = BASE_DIR / "artifacts" / "heart_disease_random_forest.pkl"
 
-model = joblib.load(MODEL_PATH)
+try:
+    logger.info("Loading trained model...")
+
+    model = joblib.load(MODEL_PATH)
+
+    logger.info("Model loaded successfully.")
+    logger.info("Heart Disease Prediction API started successfully.")
+    logger.info(f"Model loaded from {MODEL_PATH}")
+
+except Exception:
+    logger.exception("Failed to load trained model.")
+    raise
 
 
 # ==========================================================
@@ -53,6 +82,8 @@ class HeartDiseaseInput(BaseModel):
 
 @app.get("/")
 def home():
+    logger.info("Health check endpoint '/' accessed.")
+
     return {
         "message": "Heart Disease Prediction API is running."
     }
@@ -65,13 +96,27 @@ def home():
 @app.post("/predict")
 def predict(data: HeartDiseaseInput):
 
-    input_df = pd.DataFrame([data.model_dump()])
+    try:
 
-    prediction = model.predict(input_df)[0]
+        logger.info("Received prediction request.")
 
-    probability = model.predict_proba(input_df)[0]
+        input_df = pd.DataFrame([data.model_dump()])
 
-    return {
-        "prediction": int(prediction),
-        "probability": round(float(max(probability)), 4)
-    }
+        prediction = model.predict(input_df)[0]
+
+        probability = model.predict_proba(input_df)[0]
+
+        confidence = round(float(max(probability)), 4)
+
+        logger.info(
+            f"Prediction: {prediction}, Probability: {confidence}"
+        )
+
+        return {
+            "prediction": int(prediction),
+            "probability": confidence
+        }
+
+    except Exception:
+        logger.exception("Prediction request failed.")
+        raise

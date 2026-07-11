@@ -19,6 +19,19 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import GridSearchCV, train_test_split
 
+import logging
+
+# ==========================================================
+# Logging Configuration
+# ==========================================================
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+logger = logging.getLogger(__name__)
+
 
 # ==========================================================
 # Project Paths
@@ -40,7 +53,7 @@ MODEL_PATH = ARTIFACT_DIR / "heart_disease_random_forest.pkl"
 
 df = pd.read_csv(DATA_PATH)
 
-print(f"Dataset Shape: {df.shape}")
+logger.info(f"Dataset loaded successfully. Shape: {df.shape}")
 
 
 # ==========================================================
@@ -63,6 +76,10 @@ X_train, X_test, y_train, y_test = train_test_split(
     stratify=y
 )
 
+logger.info(
+    f"Training samples: {len(X_train)}, Testing samples: {len(X_test)}"
+)
+
 
 # ==========================================================
 # Hyperparameter Grid
@@ -82,72 +99,91 @@ param_grid = {
 
 mlflow.set_experiment("Heart Disease Prediction")
 
-with mlflow.start_run():
+try:
 
-    # Initialize model
-    rf_model = RandomForestClassifier(random_state=42)
+    with mlflow.start_run():
 
-    # Grid Search
-    grid_search = GridSearchCV(
-        estimator=rf_model,
-        param_grid=param_grid,
-        cv=5,
-        scoring="accuracy",
-        n_jobs=-1
-    )
+        # ==================================================
+        # Initialize Model
+        # ==================================================
 
-    # Train model
-    grid_search.fit(X_train, y_train)
+        rf_model = RandomForestClassifier(random_state=42)
 
-    best_model = grid_search.best_estimator_
+        # ==================================================
+        # Grid Search
+        # ==================================================
 
-    print("Model training completed.")
-    print(f"Best Parameters: {grid_search.best_params_}")
-    print(f"Best Cross-Validation Accuracy: {grid_search.best_score_:.4f}")
+        grid_search = GridSearchCV(
+            estimator=rf_model,
+            param_grid=param_grid,
+            cv=5,
+            scoring="accuracy",
+            n_jobs=-1
+        )
 
-    # ======================================================
-    # Evaluate Model
-    # ======================================================
+        logger.info("Starting GridSearchCV for hyperparameter tuning...")
 
-    y_pred = best_model.predict(X_test)
-    y_prob = best_model.predict_proba(X_test)[:, 1]
+        grid_search.fit(X_train, y_train)
 
-    accuracy = accuracy_score(y_test, y_pred)
-    precision = precision_score(y_test, y_pred)
-    recall = recall_score(y_test, y_pred)
-    f1 = f1_score(y_test, y_pred)
-    roc_auc = roc_auc_score(y_test, y_prob)
+        best_model = grid_search.best_estimator_
 
-    print("\nModel Performance")
-    print(f"Accuracy : {accuracy:.4f}")
-    print(f"Precision: {precision:.4f}")
-    print(f"Recall   : {recall:.4f}")
-    print(f"F1-Score : {f1:.4f}")
-    print(f"ROC-AUC  : {roc_auc:.4f}")
+        logger.info("Model training completed successfully.")
+        logger.info(f"Best Parameters: {grid_search.best_params_}")
+        logger.info(
+            f"Best Cross Validation Accuracy: {grid_search.best_score_:.4f}"
+        )
 
-    # ======================================================
-    # MLflow Logging
-    # ======================================================
+        # ==================================================
+        # Evaluate Model
+        # ==================================================
 
-    mlflow.log_params(grid_search.best_params_)
+        y_pred = best_model.predict(X_test)
+        y_prob = best_model.predict_proba(X_test)[:, 1]
 
-    mlflow.log_metric("cv_accuracy", grid_search.best_score_)
-    mlflow.log_metric("accuracy", accuracy)
-    mlflow.log_metric("precision", precision)
-    mlflow.log_metric("recall", recall)
-    mlflow.log_metric("f1_score", f1)
-    mlflow.log_metric("roc_auc", roc_auc)
+        accuracy = accuracy_score(y_test, y_pred)
+        precision = precision_score(y_test, y_pred)
+        recall = recall_score(y_test, y_pred)
+        f1 = f1_score(y_test, y_pred)
+        roc_auc = roc_auc_score(y_test, y_prob)
 
-    # Log trained model
-    mlflow.sklearn.log_model(
-    sk_model=best_model,
-    name="model",
-    input_example=X_test.iloc[:5]
-    )
+        logger.info("Model Evaluation")
+        logger.info(f"Accuracy : {accuracy:.4f}")
+        logger.info(f"Precision: {precision:.4f}")
+        logger.info(f"Recall   : {recall:.4f}")
+        logger.info(f"F1 Score : {f1:.4f}")
+        logger.info(f"ROC AUC  : {roc_auc:.4f}")
 
-    # Save model locally
-    joblib.dump(best_model, MODEL_PATH)
+        # ==================================================
+        # MLflow Logging
+        # ==================================================
 
-    print(f"\nModel saved to: {MODEL_PATH}")
+        logger.info("Logging metrics and model to MLflow.")
 
-print("\nTraining pipeline completed successfully.")
+        mlflow.log_params(grid_search.best_params_)
+
+        mlflow.log_metric("cv_accuracy", grid_search.best_score_)
+        mlflow.log_metric("accuracy", accuracy)
+        mlflow.log_metric("precision", precision)
+        mlflow.log_metric("recall", recall)
+        mlflow.log_metric("f1_score", f1)
+        mlflow.log_metric("roc_auc", roc_auc)
+
+        mlflow.sklearn.log_model(
+            sk_model=best_model,
+            name="model",
+            input_example=X_test.iloc[:5]
+        )
+
+        # ==================================================
+        # Save Model
+        # ==================================================
+
+        joblib.dump(best_model, MODEL_PATH)
+
+        logger.info(f"Model saved successfully at {MODEL_PATH}")
+
+    logger.info("Training pipeline completed successfully.")
+
+except Exception:
+    logger.exception("Training pipeline failed.")
+    raise
