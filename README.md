@@ -1,18 +1,25 @@
-# Heart Disease Prediction - MLOps Project
+# Heart Disease Prediction - End-to-End MLOps Project
 
-An end-to-end Machine Learning Operations (MLOps) project for predicting the presence of heart disease using a Random Forest Classifier. This project demonstrates the complete ML lifecycle—from model training and experiment tracking to API deployment, containerization, and Continuous Integration.
+An end-to-end Machine Learning Operations (MLOps) project for predicting heart disease using Machine Learning. The project demonstrates the complete ML lifecycle, from data preprocessing and model training to experiment tracking, API development, automated testing, containerization, and Continuous Integration.
 
 ---
 
 ## Features
 
-- Data preprocessing
-- Random Forest Classifier
+- Data preprocessing and cleaning
+- Exploratory Data Analysis (EDA)
+- Logistic Regression and Random Forest models
 - Hyperparameter tuning using GridSearchCV
+- Cross-validation and model evaluation
 - MLflow experiment tracking
 - Model serialization using Joblib
 - FastAPI REST API
+- Prediction confidence (probability)
 - Interactive Swagger UI
+- Postman API testing
+- Automated unit testing with Pytest
+- Code quality checks using Ruff
+- Application logging and exception handling
 - Docker containerization
 - GitHub Actions Continuous Integration (CI)
 
@@ -34,15 +41,19 @@ heart-disease-mlops/
 │   └── Heart_Disease_Prediction_ML_Model_Development.ipynb
 │
 ├── src/
-│   ├── train.py
-│   └── app.py
+│   ├── app.py
+│   └── train.py
 │
 ├── tests/
+│   ├── test_api.py
+│   ├── test_data.py
+│   └── test_model.py
 │
 ├── .github/
 │   └── workflows/
 │       └── ci.yml
 │
+├── artifacts/
 ├── Dockerfile
 ├── requirements.txt
 ├── README.md
@@ -53,9 +64,9 @@ heart-disease-mlops/
 
 ## Dataset
 
-This project uses the Cleveland Heart Disease Dataset from the UCI Machine Learning Repository.
+This project uses the **Cleveland Heart Disease Dataset** from the UCI Machine Learning Repository.
 
-Dataset includes patient attributes such as:
+The dataset contains clinical attributes such as:
 
 - Age
 - Sex
@@ -65,16 +76,16 @@ Dataset includes patient attributes such as:
 - Fasting Blood Sugar
 - Resting ECG
 - Maximum Heart Rate
-- Exercise Induced Angina
-- ST Depression
+- Exercise-Induced Angina
+- ST Depression (Oldpeak)
 - Slope
 - Number of Major Vessels
 - Thalassemia
 
 Target:
 
-- 0 → No Heart Disease
-- 1 → Heart Disease
+- **0** → No Heart Disease
+- **1** → Heart Disease
 
 ---
 
@@ -82,19 +93,20 @@ Target:
 
 1. Load dataset
 2. Clean and preprocess data
-3. Train/Test Split
-4. Hyperparameter tuning using GridSearchCV
-5. Train Random Forest model
-6. Evaluate model
-7. Log metrics and parameters using MLflow
-8. Save trained model using Joblib
+3. Perform Exploratory Data Analysis
+4. Train-Test Split
+5. Train Logistic Regression and Random Forest models
+6. Hyperparameter tuning using GridSearchCV
+7. Evaluate model performance
+8. Track experiments using MLflow
+9. Save the best model using Joblib
 
 ---
 
 ## Model Performance
 
 | Metric | Score |
-|---------|-------|
+|---------|-------:|
 | Accuracy | 0.9016 |
 | Precision | 0.8667 |
 | Recall | 0.9286 |
@@ -107,10 +119,10 @@ Target:
 
 MLflow is used to track:
 
-- Parameters
-- Metrics
-- Trained Models
-- Experiments
+- Hyperparameters
+- Evaluation metrics
+- Training runs
+- Best performing model
 
 Start MLflow UI:
 
@@ -134,7 +146,7 @@ Start the API:
 uvicorn src.app:app --reload
 ```
 
-API available at:
+API:
 
 ```
 http://127.0.0.1:8000
@@ -158,7 +170,7 @@ Example Response
 
 ```json
 {
-  "message": "Heart Disease Prediction API is running!"
+  "message": "Heart Disease Prediction API is running."
 }
 ```
 
@@ -192,27 +204,59 @@ Example Response
 
 ```json
 {
-  "prediction": 0
+  "prediction": 0,
+  "probability": 0.7452
 }
+```
+
+---
+
+## Testing
+
+The project includes automated tests using **Pytest**.
+
+Test coverage includes:
+
+- API endpoint tests
+- Model loading tests
+- Model prediction tests
+- Dataset validation tests
+
+Run tests:
+
+```bash
+pytest
+```
+
+---
+
+## Code Quality
+
+Static code analysis is performed using **Ruff**.
+
+Run Ruff:
+
+```bash
+ruff check .
 ```
 
 ---
 
 ## Docker
 
-Build Docker Image
+Build the Docker image:
 
 ```bash
 docker build -t heart-disease-api .
 ```
 
-Run Container
+Run the container:
 
 ```bash
 docker run -p 8000:8000 heart-disease-api
 ```
 
-Open
+Open:
 
 ```
 http://localhost:8000/docs
@@ -222,19 +266,34 @@ http://localhost:8000/docs
 
 ## GitHub Actions
 
-Continuous Integration workflow performs:
+Continuous Integration pipeline performs:
 
-- Checkout Repository
+- Checkout repository
 - Setup Python
-- Install Dependencies
-- Execute Training Pipeline
-- Verify FastAPI Application
+- Install dependencies
+- Run Ruff linting
+- Execute model training pipeline
+- Run Pytest test suite
+- Verify FastAPI application
 
-Workflow file:
+Workflow:
 
 ```
 .github/workflows/ci.yml
 ```
+
+---
+
+## Logging
+
+Application logging is implemented for:
+
+- Model loading
+- API startup
+- Prediction requests
+- Prediction results
+- Training pipeline
+- Error handling
 
 ---
 
@@ -248,17 +307,22 @@ Workflow file:
 - FastAPI
 - Uvicorn
 - Joblib
+- Pytest
+- Ruff
 - Docker
 - GitHub Actions
+- Postman
 
 ---
 
 ## Future Improvements
 
-- Kubernetes Deployment
-- Cloud Deployment
-- Monitoring
-- Model Retraining Pipeline
+- Cloud deployment
+- Kubernetes deployment
+- Model monitoring
+- Automated model retraining
+- Model registry
+- Performance monitoring dashboard
 
 ---
 
@@ -272,4 +336,4 @@ GitHub: https://github.com/05mrudula
 
 ## License
 
-This project is developed for learning and demonstration purposes.
+This project is developed for learning and educational purposes.
